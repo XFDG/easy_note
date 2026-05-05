@@ -1,0 +1,80 @@
+# Easy Note
+
+Easy Note is a desktop note-taking app for Windows 11. It supports freeform text, pasted or imported images, mouse handwriting, LaTeX math formulas, local JSON documents, and export to JPG or PDF.
+
+## Features
+
+- Freeform page canvas with a page list and property inspector.
+- Text notes with editable font family, size, color, and bold weight.
+- Image import from the system file picker and paste from the clipboard.
+- Mouse handwriting with pen color, stroke size, eraser, undo, and redo.
+- LaTeX formula blocks rendered with KaTeX.
+- Local autosave in the app window and manual JSON save/open.
+- Export the current page to JPG or PDF.
+
+## Requirements
+
+- Windows 11
+- Node.js 20 or newer
+- npm 10 or newer
+- Git
+
+The project was created from WSL, but it is intended to be cloned and run directly in Windows.
+
+## Install And Run
+
+```bash
+git clone git@github.com:XFDG/easy_note.git
+cd easy_note
+npm install
+npm run dev
+```
+
+`npm run dev` starts the Electron desktop app.
+
+## Build
+
+```bash
+npm run build
+```
+
+This checks TypeScript and builds Electron main, preload, and renderer files into `out/`.
+
+## Package For Windows
+
+Run this on Windows:
+
+```bash
+npm run package:win
+```
+
+The packaged app will be generated under `dist/`. The script uses `electron-builder` and creates Windows installer/portable targets.
+
+## Basic Usage
+
+- Use the pointer tool to select elements.
+- Use the text tool, then click the page to add a text note.
+- Use the pen tool to write with the mouse.
+- Use the eraser tool to remove handwriting strokes.
+- Use the formula tool, then click the page to insert a LaTeX formula.
+- Use the image button to import an image, or paste an image from the clipboard.
+- Select an element and use the inspector on the right to edit its style or size.
+- Use Save/Open to write or load a JSON note document.
+- Use JPG/PDF to export the current page.
+
+## Notes
+
+- Easy Note is currently a local single-user app. It does not include login, cloud sync, or collaboration.
+- Export currently targets the active page only.
+- Images are saved inside the JSON document as data URLs for simple local portability.
+- If packaging from WSL fails because Windows packaging tools are unavailable, run `npm run package:win` from a Windows terminal instead.
+
+## Tech Stack
+
+- Electron
+- React
+- Vite
+- TypeScript
+- KaTeX
+- html-to-image
+- jsPDF

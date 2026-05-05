@@ -1,0 +1,53 @@
+{
+  "name": "easy-note",
+  "version": "0.1.0",
+  "description": "A Windows-friendly desktop note app with images, handwriting, formulas, and export.",
+  "main": "./out/main/index.js",
+  "author": "XFDG",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "tsc --noEmit && electron-vite build",
+    "package:win": "npm run build && electron-builder --win"
+  },
+  "dependencies": {
+    "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
+    "katex": "^0.16.45",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^5.0.4",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^5.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.5"
+  },
+  "build": {
+    "appId": "com.xfdg.easynote",
+    "productName": "Easy Note",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
