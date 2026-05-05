@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "tsc --noEmit && electron-vite build",
-    "package:win": "npm run build && electron-builder --win"
+    "generate:icon": "node scripts/generate-icon.mjs",
+    "package:win": "npm run generate:icon && npm run build && electron-builder --win"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",
@@ -41,6 +42,7 @@
     ],
     "win": {
       "signAndEditExecutable": false,
+      "icon": "build/icon.ico",
       "artifactName": "Easy-Note-Portable-${version}-${arch}.${ext}",
       "target": [
         "portable"

@@ -143,6 +143,23 @@ button {
   background: #e9f5f4;
 }
 
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.icon-button.danger:hover {
+  border-color: #8f2d56;
+  background: #f9e9ef;
+  color: #8f2d56;
+}
+
+.inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .workspace {
   display: grid;
   grid-template-columns: 220px minmax(640px, 1fr) 286px;
@@ -181,6 +198,12 @@ button {
   flex-direction: column;
   gap: 6px;
   padding: 0 10px 16px;
+}
+
+.page-actions {
+  display: flex;
+  gap: 6px;
+  padding: 0 10px 10px;
 }
 
 .page-tab {
@@ -239,6 +262,7 @@ button {
 }
 
 .note-page.is-exporting .move-handle,
+.note-page.is-exporting .resize-handle,
 .note-page.is-exporting .note-element.is-selected {
   border-color: transparent;
 }
@@ -274,6 +298,21 @@ button {
   border-radius: 8px;
   color: #ffffff;
   background: #006d77;
+}
+
+.resize-handle {
+  position: absolute;
+  right: -8px;
+  bottom: -8px;
+  z-index: 4;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+  background: #006d77;
+  box-shadow: 0 0 0 1px #006d77;
+  cursor: nwse-resize;
 }
 
 .text-surface {

@@ -9,6 +9,8 @@ Easy Note is a desktop note-taking app for Windows 11. It supports freeform text
 - Image import from the system file picker and paste from the clipboard.
 - Mouse handwriting with pen color, stroke size, eraser, undo, and redo.
 - LaTeX formula blocks rendered with KaTeX.
+- Drag handles for moving and resizing selected text, image, and formula blocks.
+- Duplicate or delete the selected element, and duplicate or delete pages.
 - Local autosave in the app window and manual JSON save/open.
 - Export the current page to JPG or PDF.
 
@@ -85,9 +87,19 @@ npm config set electron_builder_binaries_mirror https://npmmirror.com/mirrors/el
 - Use the eraser tool to remove handwriting strokes.
 - Use the formula tool, then click the page to insert a LaTeX formula.
 - Use the image button to import an image, or paste an image from the clipboard.
-- Select an element and use the inspector on the right to edit its style or size.
+- Select an element and use the move/resize handles or the inspector on the right to edit it.
+- Use the page action buttons to duplicate or delete pages.
 - Use Save/Open to write or load a JSON note document.
 - Use JPG/PDF to export the current page.
+
+## Shortcuts
+
+- `Ctrl+Z`: undo.
+- `Ctrl+Y`: redo.
+- `Ctrl+D`: duplicate selected element.
+- `Ctrl+Shift+D`: duplicate current page.
+- `Delete` or `Backspace`: delete selected element.
+- `Esc`: return to the pointer tool.
 
 ## Notes
 

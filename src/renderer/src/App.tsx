@@ -4,6 +4,7 @@ import { jsPDF } from 'jspdf';
 import katex from 'katex';
 import {
   Bold,
+  Copy,
   Download,
   Eraser,
   FileDown,
@@ -16,6 +17,7 @@ import {
   Redo2,
   Save,
   Sigma,
+  Trash2,
   Type,
   Undo2
 } from 'lucide-react';
@@ -53,6 +55,14 @@ type DragState = {
   startClientY: number;
   startX: number;
   startY: number;
+};
+
+type ResizeState = {
+  elementId: string;
+  startClientX: number;
+  startClientY: number;
+  startWidth: number;
+  startHeight: number;
 };
 
 const fontFamilies = ['Inter', 'Arial', 'Georgia', 'Times New Roman', 'Microsoft YaHei', 'Consolas'];
@@ -155,6 +165,18 @@ function pointsToAttribute(points: Point[]): string {
   return points.map((point) => `${point.x},${point.y}`).join(' ');
 }
 
+function cloneElement(element: NoteElement): NoteElement {
+  const id = createId(element.type);
+  if (element.type === 'ink') {
+    return {
+      ...element,
+      id,
+      points: element.points.map((point) => ({ ...point }))
+    };
+  }
+  return { ...element, id };
+}
+
 function FormulaView({ latex, fontSize, color }: { latex: string; fontSize: number; color: string }) {
   const markup = useMemo(
     () =>
@@ -196,6 +218,7 @@ export default function App() {
   const [formulaDraft, setFormulaDraft] = useState('\\int_a^b f(x)\\,dx');
   const [activeStroke, setActiveStroke] = useState<Point[] | null>(null);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [resizeState, setResizeState] = useState<ResizeState | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [status, setStatus] = useState('Ready');
 
@@ -455,6 +478,20 @@ export default function App() {
     });
   };
 
+  const startResize = (event: React.PointerEvent<HTMLButtonElement>, element: NoteElement) => {
+    event.preventDefault();
+    event.stopPropagation();
+    rememberCurrentDocument();
+    setSelectedId(element.id);
+    setResizeState({
+      elementId: element.id,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startWidth: element.width,
+      startHeight: element.height
+    });
+  };
+
   useEffect(() => {
     if (!dragState) {
       return undefined;
@@ -483,6 +520,35 @@ export default function App() {
       window.removeEventListener('pointerup', handleUp);
     };
   }, [currentPage.height, currentPage.width, dragState, updateElement]);
+
+  useEffect(() => {
+    if (!resizeState) {
+      return undefined;
+    }
+
+    const handleMove = (event: PointerEvent) => {
+      const dx = event.clientX - resizeState.startClientX;
+      const dy = event.clientY - resizeState.startClientY;
+      updateElement(
+        resizeState.elementId,
+        (element) => ({
+          ...element,
+          width: clamp(resizeState.startWidth + dx, 80, currentPage.width - element.x),
+          height: clamp(resizeState.startHeight + dy, 54, currentPage.height - element.y)
+        }),
+        false
+      );
+    };
+
+    const handleUp = () => setResizeState(null);
+    window.addEventListener('pointermove', handleMove);
+    window.addEventListener('pointerup', handleUp, { once: true });
+
+    return () => {
+      window.removeEventListener('pointermove', handleMove);
+      window.removeEventListener('pointerup', handleUp);
+    };
+  }, [currentPage.height, currentPage.width, resizeState, updateElement]);
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
@@ -541,6 +607,64 @@ export default function App() {
     setSelectedId(null);
   };
 
+  const duplicateSelected = () => {
+    if (!selectedElement) {
+      return;
+    }
+    const duplicate = {
+      ...cloneElement(selectedElement),
+      x: clamp(selectedElement.x + 28, 0, currentPage.width - selectedElement.width),
+      y: clamp(selectedElement.y + 28, 0, currentPage.height - selectedElement.height)
+    };
+    updateCurrentPage((page) => ({ ...page, elements: [...page.elements, duplicate] }));
+    setSelectedId(duplicate.id);
+    setStatus('Element duplicated');
+  };
+
+  const duplicatePage = () => {
+    applyDocument((current) => {
+      const sourcePage = current.pages.find((page) => page.id === current.currentPageId);
+      if (!sourcePage) {
+        return current;
+      }
+      const duplicatedPage: NotePage = {
+        ...sourcePage,
+        id: createId('page'),
+        title: `${sourcePage.title} Copy`,
+        elements: sourcePage.elements.map(cloneElement)
+      };
+      const sourceIndex = current.pages.findIndex((page) => page.id === sourcePage.id);
+      const pages = [...current.pages];
+      pages.splice(sourceIndex + 1, 0, duplicatedPage);
+      return {
+        ...current,
+        pages,
+        currentPageId: duplicatedPage.id
+      };
+    });
+    setSelectedId(null);
+    setStatus('Page duplicated');
+  };
+
+  const deleteCurrentPage = () => {
+    if (documentData.pages.length <= 1) {
+      setStatus('At least one page is required');
+      return;
+    }
+    applyDocument((current) => {
+      const currentIndex = current.pages.findIndex((page) => page.id === current.currentPageId);
+      const pages = current.pages.filter((page) => page.id !== current.currentPageId);
+      const nextPage = pages[Math.max(0, currentIndex - 1)] ?? pages[0];
+      return {
+        ...current,
+        pages,
+        currentPageId: nextPage.id
+      };
+    });
+    setSelectedId(null);
+    setStatus('Page deleted');
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -558,6 +682,20 @@ export default function App() {
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') {
         event.preventDefault();
         redo();
+      }
+
+      if (!isEditing && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'd') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          duplicatePage();
+        } else {
+          duplicateSelected();
+        }
+      }
+
+      if (!isEditing && event.key === 'Escape') {
+        setTool('select');
+        setSelectedId(null);
       }
 
       if (!isEditing && (event.key === 'Delete' || event.key === 'Backspace')) {
@@ -715,14 +853,22 @@ export default function App() {
         onPointerDown={(event) => handleElementPointerDown(event, element)}
       >
         {selectedId === element.id && !isExporting ? (
-          <button
-            className="move-handle"
-            title="Move"
-            type="button"
-            onPointerDown={(event) => startDrag(event, element)}
-          >
-            <Move size={14} />
-          </button>
+          <>
+            <button
+              className="move-handle"
+              title="Move"
+              type="button"
+              onPointerDown={(event) => startDrag(event, element)}
+            >
+              <Move size={14} />
+            </button>
+            <button
+              className="resize-handle"
+              title="Resize"
+              type="button"
+              onPointerDown={(event) => startResize(event, element)}
+            />
+          </>
         ) : null}
 
         {element.type === 'text' ? (
@@ -853,6 +999,25 @@ export default function App() {
               <Plus size={16} />
             </button>
           </div>
+          <div className="page-actions">
+            <button
+              className="icon-button compact"
+              title="Duplicate page"
+              type="button"
+              onClick={duplicatePage}
+            >
+              <Copy size={15} />
+            </button>
+            <button
+              className="icon-button compact"
+              title="Delete page"
+              type="button"
+              onClick={deleteCurrentPage}
+              disabled={documentData.pages.length <= 1}
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
           <div className="pages">
             {documentData.pages.map((page, index) => (
               <button
@@ -915,9 +1080,24 @@ export default function App() {
           <div className="panel-heading">
             <span>Inspector</span>
             {selectedElement ? (
-              <button className="plain-button" type="button" onClick={deleteSelected}>
-                Delete
-              </button>
+              <div className="inline-actions">
+                <button
+                  className="icon-button compact"
+                  title="Duplicate element"
+                  type="button"
+                  onClick={duplicateSelected}
+                >
+                  <Copy size={15} />
+                </button>
+                <button
+                  className="icon-button compact danger"
+                  title="Delete element"
+                  type="button"
+                  onClick={deleteSelected}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
             ) : null}
           </div>
 

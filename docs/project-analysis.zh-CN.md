@@ -20,6 +20,8 @@
 - 图片能力：支持系统文件选择导入，也支持从剪贴板粘贴图片。
 - 鼠标手写：支持画笔颜色、画笔粗细、橡皮擦、撤销和重做。
 - 数学公式：使用 LaTeX 输入，通过 KaTeX 渲染为公式块。
+- 元素编辑：文字、图片、公式支持拖拽移动、拖拽缩放、复制和删除。
+- 页面管理：支持新增页面、复制当前页面、删除当前页面。
 - 本地保存：浏览器本地存储自动保存，也支持手动保存/打开 JSON 文件。
 - 导出能力：当前页面可导出为 JPG 或 PDF。
 - Windows EXE：已生成便携版单文件 EXE，放在 `release/` 目录。
@@ -29,8 +31,11 @@
 ```text
 easy_note/
 ├── .github/workflows/build-windows.yml  # GitHub Actions 自动打包 Windows EXE
+├── build/icon.ico                       # Windows 应用图标
+├── build/icon.png                       # 图标源图片
 ├── docs/project-analysis.zh-CN.md       # 本工程分析文档
 ├── release/                             # 已生成的 Windows 便携版 EXE
+├── scripts/generate-icon.mjs            # 生成 PNG/ICO 图标的脚本
 ├── src/main/index.ts                    # Electron 主进程：窗口、文件、导出 IPC
 ├── src/preload/index.ts                 # Preload：暴露安全 IPC API
 ├── src/renderer/index.html              # Renderer HTML 入口
@@ -77,7 +82,8 @@ easy_note/
 - 文字、图片、手写、公式四类元素渲染。
 - 工具栏、属性面板、页面列表交互。
 - 鼠标手写路径记录和橡皮擦命中判断。
-- 元素选择、移动、尺寸调整。
+- 元素选择、移动、拖拽缩放、复制、删除。
+- 页面新增、复制、删除。
 - 撤销/重做历史。
 - JPG/PDF 导出。
 
@@ -106,6 +112,15 @@ easy_note/
 - 更新中英文 README：说明如何从 GitHub Actions 下载 EXE，以及 `npm install` 卡住时如何切换 npm/Electron 镜像。
 - 新增本文档：`docs/project-analysis.zh-CN.md`。
 
+后续完善中又补充了以下内容：
+
+- 新增应用图标：`build/icon.png` 和 `build/icon.ico`，避免继续使用 Electron 默认图标。
+- 新增图标生成脚本：`scripts/generate-icon.mjs`，可通过 `npm run generate:icon` 重新生成图标。
+- 改进打包脚本：`npm run package:win` 会先生成图标，再构建和打包 Windows EXE。
+- 增强编辑体验：选中元素后支持右下角拖拽缩放，支持复制/删除元素。
+- 增强页面管理：支持复制当前页面和删除当前页面。
+- 增加快捷键：`Ctrl+D` 复制元素，`Ctrl+Shift+D` 复制页面，`Esc` 返回指针工具。
+
 ## 6. EXE 信息
 
 已生成文件：
@@ -123,7 +138,7 @@ PE32 executable (GUI) Intel 80386, for MS Windows, Nullsoft Installer self-extra
 SHA256：
 
 ```text
-91252db527bf32ef3cdb0d82e08441aa2c0a60b582e14c25485873c2fdb06cf3
+ee304e841e8d85cba9760c031bbbd30bdd7694881655ee8cb9b32bfe2c0ef6d8
 ```
 
 说明：
@@ -172,6 +187,12 @@ npm run build
 npm run package:win
 ```
 
+重新生成应用图标：
+
+```bash
+npm run generate:icon
+```
+
 生产依赖漏洞检查：
 
 ```bash
@@ -187,9 +208,8 @@ npm audit --omit=dev
 
 ## 10. 后续建议
 
-- 增加应用图标，避免使用 Electron 默认图标。
 - 拆分 `App.tsx`，把工具栏、画布、属性面板、元素渲染拆成独立组件。
-- 增加元素缩放拖拽手柄，而不是只通过右侧面板改宽高。
 - 增加多页 PDF 导出。
 - 增加自动保存文件路径，减少每次保存都选择路径的操作。
+- 增加元素旋转、对齐辅助线和框选能力。
 - 如果正式分发，建议购买或配置 Windows 代码签名证书，减少 SmartScreen 提示。

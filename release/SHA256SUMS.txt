@@ -1,1 +1,1 @@
-91252db527bf32ef3cdb0d82e08441aa2c0a60b582e14c25485873c2fdb06cf3  release/Easy-Note-Portable-0.1.0-x64.exe
+ee304e841e8d85cba9760c031bbbd30bdd7694881655ee8cb9b32bfe2c0ef6d8  release/Easy-Note-Portable-0.1.0-x64.exe
