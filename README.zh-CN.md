@@ -48,7 +48,40 @@ npm run build
 npm run package:win
 ```
 
-打包产物会生成在 `dist/` 目录。该命令使用 `electron-builder` 生成 Windows 安装包和便携版目标。
+打包产物会生成在 `dist/` 目录。该命令使用 `electron-builder` 生成 Windows 便携版 EXE。
+
+## 从 GitHub Actions 下载 EXE
+
+如果你在 Windows 上执行 `npm install` 很慢或者一直卡住，可以直接使用仓库里的便携版 EXE：
+
+```text
+release/Easy-Note-Portable-0.1.0-x64.exe
+```
+
+也可以下载云端自动打包好的 EXE：
+
+1. 打开 `https://github.com/XFDG/easy_note/actions`。
+2. 进入最新的 `Build Windows EXE` workflow run。
+3. 下载 `easy-note-windows-exe` artifact。
+4. 解压后运行里面生成的 `.exe` 文件。
+
+这个 artifact 里包含 `electron-builder` 生成的 Windows 便携版 EXE。
+
+## npm install 卡住时
+
+Electron 安装时会下载比较大的二进制文件，在有些网络环境里会看起来像卡住。可以先在 Windows PowerShell 中执行：
+
+```powershell
+npm config set registry https://registry.npmmirror.com
+npm config set electron_mirror https://npmmirror.com/mirrors/electron/
+npm config set electron_builder_binaries_mirror https://npmmirror.com/mirrors/electron-builder-binaries/
+```
+
+然后再重新执行：
+
+```powershell
+npm install
+```
 
 ## 基本使用
 
